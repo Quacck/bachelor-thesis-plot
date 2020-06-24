@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from statistics import mean
 from numpy import random
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -14,17 +15,20 @@ directionalweights = [0, 0.25, 0.5, 0.75, 1]
 runSizesToIndex = {1 : 0, 5:1, 10:2, 20:3, 50:4, 100:5}
 
 correlatedRunCounts = []
+correlatedRunCountsAveraged = []
 ratioOfWronglyCorrelated = []
-
+ratioOfWronglyCorrelatedAveraged = []
 
 
 # this array should hold all values in the following schema:
-# correlatedRunCounts[runSize][time][spacial][ciretion].
+# correlatedRunCounts[runSize][time][spacial][direction].
 # the values are in a string seperated by ,
 
 for sizes in runSizesToIndex:
     correlatedRunCounts.append(np.full([len(timeweights), len(spacialweights), len(directionalweights)], '', dtype=object))
+    correlatedRunCountsAveraged.append(np.zeros([len(timeweights), len(spacialweights), len(directionalweights)]))
     ratioOfWronglyCorrelated.append(np.full([len(timeweights), len(spacialweights), len(directionalweights)], '', dtype=object))
+    ratioOfWronglyCorrelatedAveraged.append(np.zeros([len(timeweights), len(spacialweights), len(directionalweights)]))
 
 
 for line in dataFile:
@@ -40,46 +44,96 @@ for line in dataFile:
     ratioOfWronglyCorrelated[runSizesToIndex[runSize]][int(time*4)][int(distance*4)][int(direction*4)] += str(ratioWrong) + ','
 
 
-print(correlatedRunCounts)
+# print(correlatedRunCounts)
 
-print(ratioOfWronglyCorrelated)
+# print(ratioOfWronglyCorrelated)
+
+# calculate the averages 
+for size in range(len(runSizesToIndex)):
+    for time in range(len(timeweights)):
+        for spacial in range(len(spacialweights)):
+            for direction in range(len(directionalweights)):
+                values = correlatedRunCounts[size][time][spacial][direction].split(',')
+                values.pop()
+                values = np.float_(values)
+                correlatedRunCountsAveraged[size][time][spacial][direction] = mean(values)
+                values = ratioOfWronglyCorrelated[size][time][spacial][direction].split(',')
+                values.pop()
+                values = np.float_(values)
+                ratioOfWronglyCorrelatedAveraged[size][time][spacial][direction] = mean(values)
+
+# print(correlatedRunCountsAveraged)
+
+# print(ratioOfWronglyCorrelatedAveraged)
+
+# create a matrix that show the count of train runs accross timeweights and distanceweights
+for key in runSizesToIndex:
+    sizeIndex = runSizesToIndex[key]
+
+    heatmap = np.zeros([5,5])
+    heaptMapDistanceWeight = 0
+    for time in range(len(timeweights)):
+        for spacial in range(len(spacialweights)):
+            heatmap[len(timeweights) - time - 1][spacial] = correlatedRunCountsAveraged[sizeIndex][time][spacial][heaptMapDistanceWeight]
+            # heatmap[len(timeweights) - time - 1][spacial] = time/4
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(heatmap)
+
+    ax.set_xticks(np.arange(len(timeweights)))
+    ax.set_yticks(np.arange(len(spacialweights)))
+
+    ax.set_title('count of trainruns with ' + str(key) + ' trains as input')
+
+    ax.set_xlabel('weight of distance')
+    ax.set_ylabel('weight of time')
 
 
+    ax.set_xticklabels(timeweights)
+    ax.set_yticklabels(spacialweights)
 
-x = np.linspace(0, 2, 100)
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+            rotation_mode="anchor")
+
+    for i in range(len(timeweights)):
+        for j in range(len(spacialweights)):
+            text = ax.text(j, i, heatmap[i, j],
+                        ha="center", va="center", color="w")
 
 
+# show correlation accuracy
+for key in runSizesToIndex:
+    sizeIndex = runSizesToIndex[key]
+
+    heatmap = np.zeros([5,5])
+    heaptMapDistanceWeight = 0
+    for time in range(len(timeweights)):
+        for spacial in range(len(spacialweights)):
+            heatmap[len(timeweights) - time - 1][spacial] = ratioOfWronglyCorrelatedAveraged[sizeIndex][time][spacial][heaptMapDistanceWeight]
+            # heatmap[len(timeweights) - time - 1][spacial] = time/4
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(heatmap)
+
+    ax.set_xticks(np.arange(len(timeweights)))
+    ax.set_yticks(np.arange(len(spacialweights)))
+
+    ax.set_title('ratio of wrong correlations with ' + str(key) + ' trains as input')
+
+    ax.set_xlabel('weight of distance')
+    ax.set_ylabel('weight of time')
 
 
-data = np.array([
-[0,0.25,0.5,0.75,0],
-[0,0.1,0.2,0.3,0],
-[0,0.4,0.5,0.6,0],
-[0,0.7,0.8,0.9,0],
-[0,0.25,0.5,0.75,0],
-])
+    ax.set_xticklabels(timeweights)
+    ax.set_yticklabels(spacialweights)
 
-fig, ax = plt.subplots()
-im = ax.imshow(data)
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+            rotation_mode="anchor")
 
-ax.set_xticks(np.arange(len(timeweights)))
-ax.set_yticks(np.arange(len(spacialweights)))
+    for i in range(len(timeweights)):
+        for j in range(len(spacialweights)):
+            text = ax.text(j, i, round(heatmap[i, j],3),
+                        ha="center", va="center", color="w")
 
-ax.set_xticklabels(timeweights)
-ax.set_yticklabels(spacialweights)
-
-plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-         rotation_mode="anchor")
-
-for i in range(len(timeweights)):
-    for j in range(len(spacialweights)):
-        text = ax.text(j, i, data[i, j],
-                       ha="center", va="center", color="w")
-
-plt.title("Simple Plot")
 plt.legend()
-# plt.show()
-
-
-# plt.imshow(data)
-# plt.show()
+plt.show()
