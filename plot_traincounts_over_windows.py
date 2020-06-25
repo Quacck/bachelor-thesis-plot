@@ -99,5 +99,3 @@ accuracyPlot.set_yticklabels(reversed(timeWindows))
 accuracyPlot.set_xticklabels(distanceWindows)
 
 plt.show()
-
-# print(accuracies)
