@@ -71,10 +71,10 @@ for key in runSizesToIndex:
     sizeIndex = runSizesToIndex[key]
 
     heatmap = np.zeros([5,5])
-    heaptMapDistanceWeight = 0
+    heaptMapDistanceWeight = 1
     for time in range(len(timeweights)):
         for spacial in range(len(spacialweights)):
-            heatmap[len(timeweights) - time - 1][spacial] = correlatedRunCountsAveraged[sizeIndex][time][spacial][heaptMapDistanceWeight]
+            heatmap[len(timeweights) - time - 1][spacial] = correlatedRunCountsAveraged[sizeIndex][time][spacial][heaptMapDistanceWeight] / key
             # heatmap[len(timeweights) - time - 1][spacial] = time/4
 
     fig, ax = plt.subplots()
@@ -83,7 +83,7 @@ for key in runSizesToIndex:
     ax.set_xticks(np.arange(len(timeweights)))
     ax.set_yticks(np.arange(len(spacialweights)))
 
-    ax.set_title('count of trainruns with ' + str(key) + ' trains as input')
+    ax.set_title('ratio of outcoming trainruns with ' + str(key) + ' trains as input')
 
     ax.set_xlabel('weight of distance')
     ax.set_ylabel('weight of time')
@@ -97,7 +97,7 @@ for key in runSizesToIndex:
 
     for i in range(len(timeweights)):
         for j in range(len(spacialweights)):
-            text = ax.text(j, i, heatmap[i, j],
+            text = ax.text(j, i, round(heatmap[i, j],3),
                         ha="center", va="center", color="w")
 
 
@@ -106,7 +106,7 @@ for key in runSizesToIndex:
     sizeIndex = runSizesToIndex[key]
 
     heatmap = np.zeros([5,5])
-    heaptMapDistanceWeight = 0
+    heaptMapDistanceWeight = 1
     for time in range(len(timeweights)):
         for spacial in range(len(spacialweights)):
             heatmap[len(timeweights) - time - 1][spacial] = ratioOfWronglyCorrelatedAveraged[sizeIndex][time][spacial][heaptMapDistanceWeight]
@@ -134,6 +134,8 @@ for key in runSizesToIndex:
         for j in range(len(spacialweights)):
             text = ax.text(j, i, round(heatmap[i, j],3),
                         ha="center", va="center", color="w")
+
+# generate a graph for time and distance being weighted by 1 with different 
 
 plt.legend()
 plt.show()
