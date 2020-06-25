@@ -108,7 +108,9 @@ for key in runSizesToIndex:
     heaptMapDistanceWeight = 1
     for time in range(len(timeweights)):
         for spacial in range(len(spacialweights)):
-            heatmap[len(timeweights) - time - 1][spacial] = ratioOfWronglyCorrelatedAveraged[sizeIndex][time][spacial][heaptMapDistanceWeight]
+            # the (0,0) is in the bottem left corner, so we have to switch around the y axis,
+            # also convert to correct correlation by using 1 - value
+            heatmap[len(timeweights) - time - 1][spacial] = 1 - ratioOfWronglyCorrelatedAveraged[sizeIndex][time][spacial][heaptMapDistanceWeight]
             # heatmap[len(timeweights) - time - 1][spacial] = time/4
 
     fig, ax = plt.subplots()
@@ -117,7 +119,7 @@ for key in runSizesToIndex:
     ax.set_xticks(np.arange(len(timeweights)))
     ax.set_yticks(np.arange(len(spacialweights)))
 
-    ax.set_title('ratio of wrong correlations with ' + str(key) + ' trains as input')
+    ax.set_title('correlation accuracy ' + str(key) + ' trains as input')
 
     ax.set_xlabel('weight of distance')
     ax.set_ylabel('weight of time')
