@@ -69,12 +69,12 @@ plt.subplots_adjust(wspace=0.3)
 
 #first diagram
 heatmap = np.zeros([5,5])
-heaptMapDistanceWeight = 1
+heaptMapDirectionalWeight = 2
 for time in range(len(timeweights)):
     for spacial in range(len(spacialweights)):
         # the (0,0) is in the bottem left corner, so we have to switch around the y axis,
         # also convert to correct correlation by using 1 - value
-        heatmap[len(timeweights) - time - 1][spacial] = 1 - ratioOfWronglyCorrelatedAveraged[runSizesToIndex[50]][time][spacial][heaptMapDistanceWeight]
+        heatmap[len(timeweights) - time - 1][spacial] = 1 - ratioOfWronglyCorrelatedAveraged[runSizesToIndex[50]][time][spacial][heaptMapDirectionalWeight]
         # heatmap[len(timeweights) - time - 1][spacial] = time/4
 im1 = ax1.imshow(heatmap, cmap='brg', vmin=0.3, vmax=0.7)
 
