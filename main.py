@@ -5,8 +5,7 @@ from numpy import random
 from mpl_toolkits.mplot3d import Axes3D
 
 #first we want to read in the data
-dataFile = open('data_with_headers.csv', 'r')
-header = dataFile.readline
+dataFile = open('weights.csv', 'r')
 
 timeweights = [0, 0.25, 0.5, 0.75, 1]
 spacialweights = [1, 0.75, 0.5, 0.25, 0]
