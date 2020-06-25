@@ -76,11 +76,11 @@ for i in range(len(timeWindows)):
         text = accuracyPlot.text(j, i, round(accuraciesAveraged[i, j],3),
                     ha="center", va="center", color="black")
 
-traincountPlot.set_ylabel('Zeitgewichtung')
-traincountPlot.set_xlabel('Ortsgewichtung')
+traincountPlot.set_ylabel('Zeitfenster in Minuten')
+traincountPlot.set_xlabel('Ortsfenster in Km')
 
-accuracyPlot.set_ylabel('Zeitgewichtung')
-accuracyPlot.set_xlabel('Ortsgewichtung')
+accuracyPlot.set_ylabel('Zeitfenster in Minuten')
+accuracyPlot.set_xlabel('Ortsfenster in Km')
 
 traincountPlot.set_title('Verhätnis der auskommenden Zuganzahl / einkommende Zuganzahl')
 accuracyPlot.set_title('Genauigkeit der Korrelation')
@@ -90,12 +90,12 @@ traincountPlot.set_yticks(np.arange(len(timeWindows)))
 traincountPlot.set_xticks(np.arange(len(distanceWindows)))
 
 traincountPlot.set_yticklabels(reversed(timeWindows))
-traincountPlot.set_xticklabels(reversed(distanceWindows))
+traincountPlot.set_xticklabels(distanceWindows)
 
 accuracyPlot.set_yticks(np.arange(len(timeWindows)))
 accuracyPlot.set_xticks(np.arange(len(distanceWindows)))
 
-accuracyPlot.set_yticklabels(timeWindows)
+accuracyPlot.set_yticklabels(reversed(timeWindows))
 accuracyPlot.set_xticklabels(distanceWindows)
 
 plt.show()
