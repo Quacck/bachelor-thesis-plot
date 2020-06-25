@@ -6,6 +6,18 @@ from mpl_toolkits.mplot3d import Axes3D
 from enum import IntEnum
 import copy
 
+def setStaticLayout(axis):
+    axis.set_xticks(np.arange(len(weights)))
+    axis.set_yticks(np.arange(len(weights)))
+    axis.set_xlabel('Zeitgewichtung')
+    axis.set_ylabel('Ortsgewichtung')
+    # plt.setp(axis.get_xticklabels(), rotation=45, ha="right",
+    #     rotation_mode="anchor")
+    for i in range(len(weights)):
+        for j in range(len(weights)):
+            text = axis.text(j, i, round(heatmap[i, j],3),
+                        ha="center", va="center", color="black")
+
 class DataMapping(IntEnum):
     TIME = 0
     DISTANCE = 1
@@ -55,7 +67,8 @@ correlatedRunCounts = copy.deepcopy(dataContainer)
 correlatedRunCountsAveraged = copy.deepcopy(dataContainer)
 ratioOfWronglyCorrelated = copy.deepcopy(dataContainer)
 ratioOfWronglyCorrelatedAveraged = copy.deepcopy(dataContainer)
-
+ratioStDev = copy.deepcopy(dataContainer)
+countStDev = copy.deepcopy(dataContainer)
 
 # this array should hold all values in the following schema:
 # correlatedRunCounts[runSize][time][spacial][direction].
@@ -85,12 +98,16 @@ for trainCount, trainCountData in enumerate(correlatedRunCounts):
         for distanceWeight, distanceWeightData in enumerate(timeWeightData):
             for directionalWeight, data  in enumerate(distanceWeightData):
                 correlatedRunCountsAveraged[trainCount][timeWeight][distanceWeight][directionalWeight] = mean(data)
+                countStDev[trainCount][timeWeight][distanceWeight][directionalWeight] = stdev(data)
 
 for trainCount, trainCountData in enumerate(ratioOfWronglyCorrelated):
     for timeWeight, timeWeightData in enumerate(trainCountData):
         for distanceWeight, distanceWeightData in enumerate(timeWeightData):
             for directionalWeight, data  in enumerate(distanceWeightData):
                 ratioOfWronglyCorrelatedAveraged[trainCount][timeWeight][distanceWeight][directionalWeight] = mean(data)
+                ratioStDev[trainCount][timeWeight][distanceWeight][directionalWeight] = stdev(data)
+
+
 
 fig, (ax2, ax1) = plt.subplots(1, 2)
 fig.tight_layout()
@@ -109,25 +126,12 @@ for time in range(len(weights)):
         # heatmap[len(timeweights) - time - 1][spacial] = time/4
 im1 = ax1.imshow(heatmap, cmap='brg', vmin=0.3, vmax=0.7)
 
-ax1.set_xticks(np.arange(len(weights)))
-ax1.set_yticks(np.arange(len(weights)))
-
 ax1.set_title('50 Züge')
 
 ax1.set_xlabel('Zeitgewichtung')
 ax1.set_ylabel('Ortsgewichtung')
 
-
-ax1.set_xticklabels(weights)
-ax1.set_yticklabels(weights)
-
-plt.setp(ax1.get_xticklabels(), rotation=45, ha="right",
-        rotation_mode="anchor")
-
-for i in range(len(weights)):
-    for j in range(len(weights)):
-        text = ax1.text(j, i, round(heatmap[i, j],3),
-                    ha="center", va="center", color="black")
+setStaticLayout(ax1)
 
 #second diagram
 heatmap = np.zeros([5,5])
@@ -140,25 +144,12 @@ for time in range(len(weights)):
         # heatmap[len(timeweights) - time - 1][spacial] = time/4
 im1 = ax2.imshow(heatmap, cmap='brg', vmin=0.3, vmax=0.7)
 
-ax2.set_xticks(np.arange(len(weights)))
-ax2.set_yticks(np.arange(len(weights)))
-
 ax2.set_title('10 Züge')
 
 ax2.set_xlabel('Zeitgewichtung')
 ax2.set_ylabel('Ortsgewichtung')
 
-
-ax2.set_xticklabels(weights)
-ax2.set_yticklabels(weights)
-
-plt.setp(ax2.get_xticklabels(), rotation=45, ha="right",
-        rotation_mode="anchor")
-
-for i in range(len(weights)):
-    for j in range(len(weights)):
-        text = ax2.text(j, i, round(heatmap[i, j],3),
-                    ha="center", va="center", color="black")
+setStaticLayout(ax2)
 
 # generate a graph for time and distance being static with different direction weights 
 timeWeight = 0.5
