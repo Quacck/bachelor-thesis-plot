@@ -6,16 +6,18 @@ from mpl_toolkits.mplot3d import Axes3D
 from enum import IntEnum
 import copy
 
-def setStaticLayout(axis):
+def setStaticLayout(axis, data):
     axis.set_xticks(np.arange(len(weights)))
     axis.set_yticks(np.arange(len(weights)))
+    axis.set_xticklabels(weights)
+    axis.set_yticklabels(reversed(weights))
     axis.set_xlabel('Zeitgewichtung')
     axis.set_ylabel('Ortsgewichtung')
     # plt.setp(axis.get_xticklabels(), rotation=45, ha="right",
     #     rotation_mode="anchor")
     for i in range(len(weights)):
         for j in range(len(weights)):
-            text = axis.text(j, i, round(heatmap[i, j],3),
+            text = axis.text(j, i, round(data[i, j],3),
                         ha="center", va="center", color="black")
 
 class DataMapping(IntEnum):
@@ -109,7 +111,10 @@ for trainCount, trainCountData in enumerate(ratioOfWronglyCorrelated):
 
 
 
-fig, (ax2, ax1) = plt.subplots(1, 2)
+fig, axes = plt.subplots(1, 2)
+ax1 = axes[0]
+ax2 = axes[1]
+
 fig.tight_layout()
 # fig.suptitle('Korrelationsgenauigkeit bei zwei verschiedenen Zuganzahlen')
 plt.subplots_adjust(wspace=0.3)
@@ -131,7 +136,10 @@ ax1.set_title('50 Züge')
 ax1.set_xlabel('Zeitgewichtung')
 ax1.set_ylabel('Ortsgewichtung')
 
-setStaticLayout(ax1)
+setStaticLayout(ax1, heatmap)
+
+# fig.colorbar(im1, ax=axes.ravel().tolist())
+
 
 #second diagram
 heatmap = np.zeros([5,5])
@@ -149,7 +157,33 @@ ax2.set_title('10 Züge')
 ax2.set_xlabel('Zeitgewichtung')
 ax2.set_ylabel('Ortsgewichtung')
 
-setStaticLayout(ax2)
+setStaticLayout(ax2, heatmap)
+
+# visualize the standard deviation
+fig, (stdevRatio10, stdevRatio50) = plt.subplots(1, 2)
+fig.tight_layout()
+heatmap = np.zeros([5,5])
+heaptMapDistanceWeight = 1
+for time in range(len(weights)):
+    for spacial in range(len(weights)):
+        # the (0,0) is in the bottem left corner, so we have to switch around the y axis,
+        # also convert to correct correlation by using 1 - value
+        heatmap[len(weights) - time - 1][spacial] = ratioStDev[trainCounts[50]][time][spacial][heaptMapDirectionalWeight]
+        # heatmap[len(timeweights) - time - 1][spacial] = time/4
+
+im1 = stdevRatio50.imshow(heatmap, cmap='brg')
+setStaticLayout(stdevRatio50, heatmap)
+
+heatmap = np.zeros([5,5])
+heaptMapDistanceWeight = 1
+for time in range(len(weights)):
+    for spacial in range(len(weights)):
+        # the (0,0) is in the bottem left corner, so we have to switch around the y axis,
+        # also convert to correct correlation by using 1 - value
+        heatmap[len(weights) - time - 1][spacial] = ratioStDev[trainCounts[10]][time][spacial][heaptMapDirectionalWeight]
+        # heatmap[len(timeweights) - time - 1][spacial] = time/4
+stdevRatio10.imshow(heatmap, cmap='brg')
+setStaticLayout(stdevRatio10, heatmap)
 
 # generate a graph for time and distance being static with different direction weights 
 timeWeight = 0.5
