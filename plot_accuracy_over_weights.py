@@ -6,6 +6,9 @@ from mpl_toolkits.mplot3d import Axes3D
 from enum import IntEnum
 import copy
 
+def minSampleSizeOf(trainRuns):
+    return np.amin(sampleSizes[trainCounts[trainRuns]])
+
 def setStaticLayout(axis, data):
     axis.set_xticks(np.arange(len(weights)))
     axis.set_yticks(np.arange(len(weights)))
@@ -71,6 +74,7 @@ ratioOfWronglyCorrelated = copy.deepcopy(dataContainer)
 ratioOfWronglyCorrelatedAveraged = copy.deepcopy(dataContainer)
 ratioStDev = copy.deepcopy(dataContainer)
 countStDev = copy.deepcopy(dataContainer)
+sampleSizes = copy.deepcopy(dataContainer)
 
 # this array should hold all values in the following schema:
 # correlatedRunCounts[runSize][time][spacial][direction].
@@ -89,11 +93,6 @@ for line in dataFile:
     correlatedRunCounts[trainCounts[trainCount]][int(time*4)][int(distance*4)][int(direction*4)].append(trainCount / trainCountCorrelated)
     ratioOfWronglyCorrelated[trainCounts[trainCount]][int(time*4)][int(distance*4)][int(direction*4)].append(ratioWrong)
 
-
-# print(correlatedRunCounts)
-
-# print(ratioOfWronglyCorrelated)
-
 # calculate the averages 
 for trainCount, trainCountData in enumerate(correlatedRunCounts):
     for timeWeight, timeWeightData in enumerate(trainCountData):
@@ -101,6 +100,7 @@ for trainCount, trainCountData in enumerate(correlatedRunCounts):
             for directionalWeight, data  in enumerate(distanceWeightData):
                 correlatedRunCountsAveraged[trainCount][timeWeight][distanceWeight][directionalWeight] = mean(data)
                 countStDev[trainCount][timeWeight][distanceWeight][directionalWeight] = stdev(data)
+                sampleSizes[trainCount][timeWeight][distanceWeight][directionalWeight] = len(data)
 
 for trainCount, trainCountData in enumerate(ratioOfWronglyCorrelated):
     for timeWeight, timeWeightData in enumerate(trainCountData):
@@ -109,36 +109,32 @@ for trainCount, trainCountData in enumerate(ratioOfWronglyCorrelated):
                 ratioOfWronglyCorrelatedAveraged[trainCount][timeWeight][distanceWeight][directionalWeight] = mean(data)
                 ratioStDev[trainCount][timeWeight][distanceWeight][directionalWeight] = stdev(data)
 
-
-
 fig, axes = plt.subplots(1, 2)
+
 ax1 = axes[0]
 ax2 = axes[1]
 
 fig.tight_layout()
-# fig.suptitle('Korrelationsgenauigkeit bei zwei verschiedenen Zuganzahlen')
+
 plt.subplots_adjust(wspace=0.3)
 
+minSampleSize = np.amin(np.asarray(sampleSizes[3]))
 
 #first diagram
 heatmap = np.zeros([5,5])
 heaptMapDirectionalWeight = 2
 for time in range(len(weights)):
     for spacial in range(len(weights)):
-        # the (0,0) is in the bottem left corner, so we have to switch around the y axis,
-        # also convert to correct correlation by using 1 - value
         heatmap[len(weights) - time - 1][spacial] = 1 - ratioOfWronglyCorrelatedAveraged[trainCounts[50]][time][spacial][heaptMapDirectionalWeight]
-        # heatmap[len(timeweights) - time - 1][spacial] = time/4
+
 im1 = ax1.imshow(heatmap, cmap='brg', vmin=0.3, vmax=0.7)
 
-ax1.set_title('50 Züge')
+ax1.set_title('50 Züge, n = ' + str(minSampleSizeOf(50)) + ' pro Eintrag')
 
 ax1.set_xlabel('Zeitgewichtung')
 ax1.set_ylabel('Ortsgewichtung')
 
 setStaticLayout(ax1, heatmap)
-
-# fig.colorbar(im1, ax=axes.ravel().tolist())
 
 
 #second diagram
@@ -146,13 +142,11 @@ heatmap = np.zeros([5,5])
 heaptMapDistanceWeight = 1
 for time in range(len(weights)):
     for spacial in range(len(weights)):
-        # the (0,0) is in the bottem left corner, so we have to switch around the y axis,
-        # also convert to correct correlation by using 1 - value
         heatmap[len(weights) - time - 1][spacial] = 1 - ratioOfWronglyCorrelatedAveraged[trainCounts[10]][time][spacial][heaptMapDistanceWeight]
-        # heatmap[len(timeweights) - time - 1][spacial] = time/4
+
 im1 = ax2.imshow(heatmap, cmap='brg', vmin=0.3, vmax=0.7)
 
-ax2.set_title('10 Züge')
+ax2.set_title('10 Züge, n = ' + str(minSampleSizeOf(10)) + ' pro Eintrag')
 
 ax2.set_xlabel('Zeitgewichtung')
 ax2.set_ylabel('Ortsgewichtung')
@@ -166,10 +160,7 @@ heatmap = np.zeros([5,5])
 heaptMapDistanceWeight = 1
 for time in range(len(weights)):
     for spacial in range(len(weights)):
-        # the (0,0) is in the bottem left corner, so we have to switch around the y axis,
-        # also convert to correct correlation by using 1 - value
         heatmap[len(weights) - time - 1][spacial] = ratioStDev[trainCounts[50]][time][spacial][heaptMapDirectionalWeight]
-        # heatmap[len(timeweights) - time - 1][spacial] = time/4
 
 im1 = stdevRatio50.imshow(heatmap, cmap='brg')
 setStaticLayout(stdevRatio50, heatmap)
@@ -178,10 +169,8 @@ heatmap = np.zeros([5,5])
 heaptMapDistanceWeight = 1
 for time in range(len(weights)):
     for spacial in range(len(weights)):
-        # the (0,0) is in the bottem left corner, so we have to switch around the y axis,
-        # also convert to correct correlation by using 1 - value
         heatmap[len(weights) - time - 1][spacial] = ratioStDev[trainCounts[10]][time][spacial][heaptMapDirectionalWeight]
-        # heatmap[len(timeweights) - time - 1][spacial] = time/4
+
 stdevRatio10.imshow(heatmap, cmap='brg')
 setStaticLayout(stdevRatio10, heatmap)
 
@@ -195,17 +184,12 @@ accuracies = []
 for directionalWeight in weights:
     accuracies.append(ratioOfWronglyCorrelatedAveraged[trainCounts[50]][int(timeWeight * 4)][int(distanceWeight * 4)][int(directionalWeight*4)])
 
-# plt.plot(accuracies, [0, 0.25, 0.5, 0.75, 1])
-
 fig, directional = plt.subplots()
-# fig.suptitle('Korrelationsgenauigkeit bei unterschiedlicher Richtungsgewichtung bei 50 Zügen \n Zeitgewichtung = 0.5, Ortsgewichtung = 0.75')
 
 weightKeys = list(weights.keys())
 
 im = directional.plot(weightKeys, accuracies)
 directional.set_ylim([0.4, 0.6])
-# directional.set_xticks(np.arange(len(directionalweights)))
-# directional.set_xticklabels(directionalweights)
 
 for j in range(len(weights)):
         text = directional.text(0, j, weightKeys[j],
