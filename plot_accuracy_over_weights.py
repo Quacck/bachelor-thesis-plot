@@ -109,10 +109,10 @@ for trainCount, trainCountData in enumerate(ratioOfWronglyCorrelated):
                 ratioOfWronglyCorrelatedAveraged[trainCount][timeWeight][distanceWeight][directionalWeight] = mean(data)
                 ratioStDev[trainCount][timeWeight][distanceWeight][directionalWeight] = stdev(data)
 
-fig, axes = plt.subplots(1, 2)
+fig, ax1 = plt.subplots()
 
-ax1 = axes[0]
-ax2 = axes[1]
+# ax1 = axes[0]
+# ax2 = axes[1]
 
 fig.tight_layout()
 
@@ -122,45 +122,51 @@ minSampleSize = np.amin(np.asarray(sampleSizes[3]))
 
 #first diagram
 heatmap = np.zeros([5,5])
-heaptMapDirectionalWeight = 2
+heaptMapDirectionalWeight = 0
 for time in range(len(weights)):
     for spacial in range(len(weights)):
         heatmap[len(weights) - time - 1][spacial] = 1 - ratioOfWronglyCorrelatedAveraged[trainCounts[50]][time][spacial][heaptMapDirectionalWeight]
 
+averageAccuracyAt50 = np.mean(heatmap)
 im1 = ax1.imshow(heatmap, cmap='brg', vmin=0.3, vmax=0.7)
 
-ax1.set_title('50 Züge, n = ' + str(minSampleSizeOf(50)) + ' pro Eintrag')
+print('50 Züge, n = ' + str(minSampleSizeOf(50)) + ' pro Eintrag')
 
 ax1.set_xlabel('Zeitgewichtung')
 ax1.set_ylabel('Ortsgewichtung')
-
 setStaticLayout(ax1, heatmap)
-
+fig.savefig("test.png")
 
 #second diagram
+fig, ax2 = plt.subplots()
 heatmap = np.zeros([5,5])
-heaptMapDistanceWeight = 1
+heaptMapDistanceWeight = 0
 for time in range(len(weights)):
     for spacial in range(len(weights)):
         heatmap[len(weights) - time - 1][spacial] = 1 - ratioOfWronglyCorrelatedAveraged[trainCounts[10]][time][spacial][heaptMapDistanceWeight]
 
+averageAccuracyAt10 = np.mean(heatmap)
 im1 = ax2.imshow(heatmap, cmap='brg', vmin=0.3, vmax=0.7)
 
-ax2.set_title('10 Züge, n = ' + str(minSampleSizeOf(10)) + ' pro Eintrag')
+print('10 Züge, n = ' + str(minSampleSizeOf(10)) + ' pro Eintrag')
 
 ax2.set_xlabel('Zeitgewichtung')
 ax2.set_ylabel('Ortsgewichtung')
 
 setStaticLayout(ax2, heatmap)
+fig.savefig("test2.png")
 
 # visualize the standard deviation
+# over all the ratios in one "tile"
 fig, (stdevRatio10, stdevRatio50) = plt.subplots(1, 2)
 fig.tight_layout()
 heatmap = np.zeros([5,5])
-heaptMapDistanceWeight = 1
+heaptMapDistanceWeight = 0
 for time in range(len(weights)):
     for spacial in range(len(weights)):
         heatmap[len(weights) - time - 1][spacial] = ratioStDev[trainCounts[50]][time][spacial][heaptMapDirectionalWeight]
+
+print("average standard deviation @50 trains = " + str(np.mean(heatmap)) + " and the coefficient = " + str(np.mean(heatmap)/averageAccuracyAt50))
 
 im1 = stdevRatio50.imshow(heatmap, cmap='brg')
 setStaticLayout(stdevRatio50, heatmap)
@@ -170,6 +176,9 @@ heaptMapDistanceWeight = 1
 for time in range(len(weights)):
     for spacial in range(len(weights)):
         heatmap[len(weights) - time - 1][spacial] = ratioStDev[trainCounts[10]][time][spacial][heaptMapDirectionalWeight]
+
+print("average standard deviation @10 trains = " + str(np.mean(heatmap)) + " and the coefficient = " + str(np.mean(heatmap)/averageAccuracyAt10))
+
 
 stdevRatio10.imshow(heatmap, cmap='brg')
 setStaticLayout(stdevRatio10, heatmap)
@@ -188,12 +197,13 @@ fig, directional = plt.subplots()
 
 weightKeys = list(weights.keys())
 
-im = directional.plot(weightKeys, accuracies)
+print(accuracies)
+
+im = directional.plot(accuracies)
 directional.set_ylim([0.4, 0.6])
 
-for j in range(len(weights)):
-        text = directional.text(0, j, weightKeys[j],
-                    ha="center", va="center", color="black")
+directional.set_xticks(np.arange(len(weightKeys)))
+directional.set_xticklabels(weightKeys)
 
 
 directional.set_xlabel('Richtungsgewichtung')

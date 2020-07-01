@@ -61,7 +61,8 @@ for timeIndex, row in enumerate(accuracies):
 
 
 # create a heatmap from the data
-fig, (traincountPlot, accuracyPlot) = plt.subplots(2)
+fig, traincountPlot = plt.subplots()
+fig, accuracyPlot = plt.subplots()
 fig.tight_layout()
 # print(countRatios)
 
